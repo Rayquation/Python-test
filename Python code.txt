@@ -1,0 +1,91 @@
+# her impoter vi de forskellige libarys som vi skal bruge
+from sense_hat import SenseHat
+import time, random
+
+#Her laver vi en variable som bruger metoden SenseHat()
+sense = SenseHat()
+
+#Farverne som skal bruges til snake
+red=(255,0 ,0)
+white=(255,255,255)
+clear=(0,0,0)
+
+# Her laver vi nogen af de variabler som skal bruges
+trail = [[3,3]]
+direction = [1,0]
+length = 1
+
+#her giver vi æblet et tilfældigt kordinat 
+applePos = [random.randint(0,7),random.randint(0,7)]
+
+pixels = [clear] * 64
+
+#For at ændre hvor at snake skal rykke sig hen i hvilken hastighed
+def setDirection(d):
+  
+  global direction
+  
+  if d == 0:
+    direction = [0, -1]
+  elif d == 1:
+    direction = [1, 0]
+  elif d == 2:
+    direction = [0, 1]
+  elif d == 3:
+    direction = [-1, 0]
+    
+while True:
+  
+  pixels = [clear] * 64
+  
+  pixels[applePos[1] * 8 + applePos[0]]= red
+  
+  #Event til at ændre på hvor at snake skal bevæge sig hen
+  for event in sense.stick.get_events():
+    
+    if event.action == "pressed":
+      
+      if event.direction =="up":
+        setDirection(0)
+      elif event.direction =="right":
+        setDirection(1)
+      elif event.direction =="down":
+        setDirection(2)
+      elif event.direction =="left":
+        setDirection(3)
+        
+  trail.insert(0, [trail[0][0] + direction[0], trail[0][1] + direction[1]])
+  
+  
+  if trail[0][0] < 0:
+    trail[0][0] = 7
+  if trail [0][1] < 0:
+    trail[0][1]=7
+  if trail [0][0] >7:
+    trail[0][0] = 0
+  if trail [0][1] > 7:
+    trail[0][1]=0
+  
+  #Her fortæller vi at snake skal blive stører vis den får æblet
+  if trail[0] == applePos:
+    applePos = []
+    while applePos == []:
+      applePos = [random.randint(0,7), random.randint(0,7)]
+      if applePos in trail : 
+        applePos = []
+    length += 1
+  elif trail[0] in trail[1:]: #rest length if snake runs into itself
+    length = 1
+  
+  else:
+    while len(trail) > length:
+      trail.pop()
+      
+  for pos in trail:
+    pixels[pos[1] * 8 + pos[0]]=white
+  
+  pixels[applePos[1] * 8 + applePos[0]] = red
+  
+  sense.set_pixels(pixels)
+  
+  time.sleep(0.5)
